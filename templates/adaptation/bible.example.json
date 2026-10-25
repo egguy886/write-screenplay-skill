@@ -1,0 +1,295 @@
+{
+  "title": "Example Title",
+  "title_cn": "示例剧名",
+  "characters": [
+    {
+      "id": "C01",
+      "name": "Ivy",
+      "aliases": [
+        "Ivy Grant",
+        "Miss Grant",
+        "Ms. Grant"
+      ],
+      "tier": "lead",
+      "role": "女主：穷学生，复仇撩错人",
+      "age": 22,
+      "want": "让劈腿的前任在全家面前出丑",
+      "need": "承认自己值得被爱，不必先证明自己",
+      "misbelief": "有钱人的好意都是交易",
+      "arc": "伪装、逃跑 → 承认被看见 → 主动选择",
+      "contradiction": "怂得像只老鼠 × 被逼急了敢当面咬人",
+      "first_entrance": "发完分手短信立刻拉黑、删记录，把手机扣在被子上",
+      "pressure_choices": [
+        {
+          "ep": 1,
+          "choice": "账户只剩 $43，仍一分不动那笔巨款"
+        },
+        {
+          "ep": 30,
+          "choice": "被堵在房间里，宁可翻露台也不认"
+        },
+        {
+          "ep": 59,
+          "choice": "主动把他拉进婚姻"
+        }
+      ],
+      "voice_sheet": {
+        "rhythm": "快、连珠炮；紧张时越说越长",
+        "vocabulary": "文学、游戏叙事词 + 农场俚语",
+        "catchphrases": [
+          "Technically…"
+        ],
+        "never_says": [
+          "叫他的名字（直到第 19 集）"
+        ],
+        "tells": "说谎时补充过多细节"
+      },
+      "visual": {
+        "age": "22 岁",
+        "height": "偏娇小",
+        "build": "纤细",
+        "face": "鹿眼、淡眉、鼻尖微翘",
+        "hair": "及肩微卷黑发",
+        "skin": "白皙，干净平滑",
+        "signature": [
+          "右手腕内侧一枚小星星纹身"
+        ],
+        "en": "a petite 22-year-old woman with large doe eyes, faint brows, a slightly upturned nose and shoulder-length loose black curls; fair, clean, evenly toned skin"
+      },
+      "wardrobe": [
+        "C01-HOME",
+        "C01-GALA"
+      ],
+      "voice_casting": {
+        "tier": "asset",
+        "timbre": "清亮略带气声的年轻女声",
+        "pitch": "中高",
+        "pace": "偏快",
+        "accent": "美国中西部",
+        "age_anchor": "22 岁女性",
+        "reference": "活泼但会突然压低声音的大学生",
+        "en": "a bright, slightly breathy young female voice, quick and Midwestern"
+      },
+      "acting": {
+        "engine": "先慌，再硬撑；越心虚越礼貌",
+        "body": "shoulders slightly hunched, weight on the back foot",
+        "eyes": "her eyes dart to the exit before she answers",
+        "tics": [
+          {
+            "en": "she tucks a curl behind her ear and stops halfway",
+            "cn": "把卷发别到耳后，别到一半停住",
+            "trigger": "编谎时"
+          }
+        ]
+      },
+      "gender": "female"
+    },
+    {
+      "id": "C02",
+      "name": "Adrian",
+      "aliases": [
+        "Adrian Cole",
+        "Mr. Cole"
+      ],
+      "tier": "lead",
+      "role": "男主：冷面总裁，从第一天就知道她是谁",
+      "age": 29,
+      "want": "把她留在身边，又不吓跑她",
+      "need": "学会放手，让她自己选择",
+      "misbelief": "能掌控的才安全",
+      "arc": "暗中掌控 → 被揭穿 → 道歉放权",
+      "contradiction": "冷血收购者 × 腕上戴着她寄的廉价钥匙扣",
+      "first_entrance": "推门进宴会厅，视线越过所有人，只落在她手上",
+      "pressure_choices": [
+        {
+          "ep": 30,
+          "choice": "当众捏碎酒杯，不再假装"
+        },
+        {
+          "ep": 49,
+          "choice": "挨朋友一拳不还手，交出所有权限"
+        }
+      ],
+      "voice_sheet": {
+        "rhythm": "短句、陈述句，几乎不提问",
+        "vocabulary": "金融、合同词：asset、interest、authorization",
+        "catchphrases": [
+          "little bird",
+          "Miss Grant"
+        ],
+        "never_says": [
+          "please（直到道歉弧）",
+          "解释自己的动机"
+        ],
+        "tells": "认真时声音反而放轻"
+      },
+      "visual": {
+        "age": "29 岁",
+        "height": "高大，约 188cm 的身形比例",
+        "build": "宽肩窄腰",
+        "face": "深灰蓝眼睛，下颌线利落",
+        "hair": "黑色短发，向后梳",
+        "skin": "冷白",
+        "signature": [
+          "右手腕：廉价钥匙扣挂在名表旁"
+        ],
+        "en": "a tall, broad-shouldered 29-year-old man with slate-blue eyes, a sharp jawline and short black hair swept back; cool pale skin"
+      },
+      "wardrobe": [
+        "C02-SUIT",
+        "C02-WET"
+      ],
+      "voice_casting": {
+        "tier": "asset",
+        "timbre": "低沉、颗粒感的男中音",
+        "pitch": "低",
+        "pace": "慢，停顿多",
+        "accent": "纽约，偏英式发音",
+        "age_anchor": "29 岁男性",
+        "reference": "很少提高音量的掌权者",
+        "en": "a low, gravelly baritone, slow and measured"
+      },
+      "gender": "male"
+    },
+    {
+      "id": "C03",
+      "name": "Jess",
+      "aliases": [],
+      "tier": "support",
+      "role": "闺蜜：替女主说出心里话，也是最先撞破秘密的人",
+      "want": "让女主重新开心起来",
+      "visual": {
+        "signature": [
+          "永远戴着大墨镜"
+        ]
+      },
+      "wardrobe": [
+        "C03-BASE"
+      ],
+      "voice_casting": {
+        "tier": "prompt",
+        "timbre": "明亮、语速快的年轻女声",
+        "en": "a bright, fast-talking young female voice"
+      },
+      "gender": "female"
+    }
+  ],
+  "wardrobe": [
+    {
+      "id": "C01-HOME",
+      "character": "C01",
+      "name_cn": "灰色宽大卫衣 + 毛绒鲨鱼拖鞋",
+      "look_en": "an oversized grey sweatshirt, bare legs and plush shark-head slippers",
+      "look_cn": "宽大灰卫衣、光腿、毛绒鲨鱼头拖鞋",
+      "episodes": "1-9"
+    },
+    {
+      "id": "C01-GALA",
+      "character": "C01",
+      "name_cn": "祖母绿真丝吊带裙",
+      "look_en": "an emerald silk slip dress with thin straps and simple black heels",
+      "look_cn": "祖母绿真丝细吊带裙、简洁黑色高跟鞋",
+      "episodes": "28-31"
+    },
+    {
+      "id": "C02-SUIT",
+      "character": "C02",
+      "name_cn": "炭灰三件套",
+      "look_en": "a charcoal three-piece suit, white shirt, dark tie",
+      "look_cn": "炭灰三件套、白衬衫、深色领带",
+      "episodes": "1-60"
+    },
+    {
+      "id": "C02-WET",
+      "character": "C02",
+      "name_cn": "暴雨湿透的西装",
+      "look_en": "the same charcoal suit soaked through by rain, shirt clinging, hair wet",
+      "look_cn": "同一套西装被暴雨湿透、衬衫贴身、头发湿",
+      "episodes": "46",
+      "variant_of": "C02-SUIT"
+    },
+    {
+      "id": "C03-BASE",
+      "character": "C03",
+      "name_cn": "米色风衣 + 大墨镜",
+      "look_en": "a beige trench coat and oversized black sunglasses",
+      "look_cn": "米色风衣、黑色大墨镜",
+      "episodes": "1-60"
+    }
+  ],
+  "props": [
+    {
+      "id": "P01",
+      "name_cn": "Ivy 的手机（空白屏）",
+      "aliases": [
+        "手机",
+        "phone"
+      ],
+      "look_en": "a cracked-corner smartphone with a blank, softly glowing screen",
+      "look_cn": "屏幕一角碎裂的手机，屏幕空白微亮",
+      "owner": "C01",
+      "first_ep": 1,
+      "states": [
+        {
+          "ep": 1,
+          "state": "屏幕右下角碎裂"
+        }
+      ],
+      "payoff_ep": 30
+    },
+    {
+      "id": "P02",
+      "name_cn": "旧钥匙扣",
+      "aliases": [
+        "钥匙扣",
+        "旧钥匙扣",
+        "keychain"
+      ],
+      "look_en": "a cheap handmade keychain with a faded red bead and a scratched brass ring",
+      "look_cn": "廉价手工钥匙扣，褪色红珠子、划痕黄铜环",
+      "owner": "C02",
+      "position": "右手腕，挂在名表旁",
+      "first_ep": 1,
+      "states": [
+        {
+          "ep": 1,
+          "state": "旧、褪色"
+        },
+        {
+          "ep": 51,
+          "state": "被换成新的"
+        }
+      ],
+      "payoff_ep": 51
+    }
+  ],
+  "locations": [
+    {
+      "id": "N-CLUB",
+      "name_cn": "私人俱乐部宴会厅（夜）",
+      "aliases": [
+        "俱乐部",
+        "宴会厅",
+        "club"
+      ],
+      "look_en": "a private members' club ballroom with dark walnut panels, a green marble fireplace and crystal chandeliers",
+      "look_cn": "胡桃木墙板、绿色大理石壁炉、水晶吊灯的私人俱乐部宴会厅",
+      "anchors_en": "the double doors are at frame-left; the fireplace is at frame-right",
+      "light_en": "warm firelight from frame-right",
+      "episodes": "1-2"
+    },
+    {
+      "id": "N-IVY-ROOM",
+      "name_cn": "Ivy 的出租屋（夜）",
+      "aliases": [
+        "出租屋",
+        "床沿"
+      ],
+      "look_en": "a cramped student bedroom with a twin bed, a frayed quilt and a clanking radiator",
+      "look_cn": "狭小的学生出租屋：单人床、磨旧被子、叮当作响的暖气片",
+      "anchors_en": "the bed is along frame-right; the window is at frame-left",
+      "light_en": "cold blue streetlight through the window",
+      "episodes": "1"
+    }
+  ]
+}
