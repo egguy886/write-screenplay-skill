@@ -148,6 +148,7 @@ git clone https://github.com/egguy886/write-screenplay-skill.git .agents/skills/
 
 ## 相关项目
 
+- [h3-drama-kit](https://github.com/egguy886/h3-drama-kit)：下一步，把剧本做成 MiniMax H3 成片（资产、分镜提示词、自检、AutoDL 出片、看片、后期）。`bible_check.py --export-h3` 直接导出它的资产库格式。
 - [jtydhr88/screenwriting-skills](https://github.com/jtydhr88/screenwriting-skills)：MIT 开源的深度编剧理论库（结构、人物、对白、连续剧写作，提炼自 47 本编剧书）。它不针对微短剧；需要底层理论时，可把其中的 `sw-character-conflict`、`sw-dialogue`、`sw-series-structure` 与本 skill 搭配使用。
 
 ## 许可证

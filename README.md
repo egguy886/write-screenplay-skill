@@ -150,6 +150,7 @@ Every script is checked before delivery:
 
 ## Related
 
+- [h3-drama-kit](https://github.com/egguy886/h3-drama-kit) — the next step: turns these scripts into a finished AI short drama on MiniMax H3 (assets, shot prompts, linting, AutoDL generation, review, post). `bible_check.py --export-h3` writes its asset library format directly.
 - [jtydhr88/screenwriting-skills](https://github.com/jtydhr88/screenwriting-skills) — a deep, MIT-licensed screenwriting craft library (structure, character, dialogue, series writing, distilled from 47 craft books). It is not micro-drama specific; pair `sw-character-conflict`, `sw-dialogue` and `sw-series-structure` with this skill when you want the underlying theory.
 
 ## License
