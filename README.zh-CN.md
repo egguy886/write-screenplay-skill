@@ -112,20 +112,20 @@ git clone https://github.com/egguy886/write-screenplay-skill.git .agents/skills/
 ### 输出格式（出海模式）
 
 ```markdown
-### 场 01. The Aurelian 18 楼门厅 · 内 · 清晨
-**出场人物**：Wren, Lucien
-**造型**：Wren=C01-SHARK, Lucien=C02-SUIT
-**核心道具**：外卖咖啡、旧手绳
+### 场 01. 私人俱乐部宴会厅 · 内 · 夜
+**出场人物**：Ivy, Adrian
+**造型**：Ivy=C01-GALA, Adrian=C02-SUIT
+**核心道具**：旧钥匙扣
 
-△ （中景）18A 的门无声滑开，Lucien 提着公文包走出。
-△ （特写）Wren 脚上的鲨鱼拖鞋张着毛绒大嘴。
+△ （中景）大厅门口，Adrian 停下脚步，视线越过人群，落在 Ivy 握杯的右手上。
+△ （近景）Adrian 抬起右手，指间挂着一只旧钥匙扣。【停留 1.5 秒】
 
-**Lucien**
-（俯身，把咖啡递给她）
-"Drink it quickly, little mouse."
-（中文潜台词：别想躲，我们有很多账要算。）
+**Adrian**
+（走到她面前，声音很轻）
+"Careful. You're shaking."
+（中文潜台词：别装了，我认得你。）
 
-**【Episode 009 完 · 集尾钩子：line】**
+**【Episode 001 完 · 集尾钩子：reveal】**
 ```
 
 场次标题用 `### 场 NN.`、说话人用 `**Name**`，下游台词锁定工具可以直接读取。画外音（`**Name (V.O.)**`）和屏幕文字（`【屏幕 · A → B】`）不进视频模型，后期配音/叠字。

@@ -84,8 +84,8 @@ python3 scripts/bible_check.py adaptation/bible.json --export-h3 <项目>/librar
 
 剧本场次头可选加一行造型（写名字或 ID 均可）：
 ```text
-### 场 03. The Aurelian 18 楼门厅 · 内 · 清晨
-**出场人物**：Wren, Lucien
-**造型**：Wren=C01-SHARK, Lucien=C02-SUIT
-**核心道具**：外卖咖啡、旧手绳
+### 场 03. 公寓门厅 · 内 · 清晨
+**出场人物**：Ivy, Adrian
+**造型**：Ivy=C01-HOME, Adrian=C02-SUIT
+**核心道具**：外卖咖啡、旧钥匙扣
 ```
