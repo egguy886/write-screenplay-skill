@@ -2,7 +2,8 @@
 name: write-screenplay
 description: |
   写剧本 skill：将小说或相关设定一键转译为专业级剧本（微短剧、影视、漫剧）。支持“国内中文剧本”与“出海短剧剧本（英文角色名+中文动作+英文对白）”双模式。深度适配主流平台（AI Agent平台：Claude Code、Codex、Antigravity、Grok、豆包；发行平台：抖音、快手、ReelShort、DramaBox、ShortMax、TikTok）。内置“AI视频生成友好型动作解耦”，解决复杂动作堆叠导致后续视频生成融化变形的核心痛点。
-  触发词：/写剧本、写剧本、小说转剧本、改编剧本、出海剧本、短剧剧本、剧本创作、screenplay、novel-to-script
+  内置“长篇改编模式”：把几十到上百章的长篇压进固定集数（默认 ≤60 集），先做章节节拍卡、压缩决策、集数预算、分集大纲（含开场回钩与集尾钩子），再逐集写作，并用脚本校验覆盖率、钩子轮换、对白预算和格式。
+  触发词：/写剧本、写剧本、小说转剧本、改编剧本、出海剧本、短剧剧本、剧本创作、长篇改编、分集大纲、压缩成60集、集尾钩子、screenplay、novel-to-script
 ---
 
 # 写剧本 Skill (Novel & Worldbuilding to Screenplay Engine)
@@ -191,3 +192,38 @@ Grover
 4. **[三秒抓人门禁]** 第 001 集开篇前 3 秒是否已有明确危机、强视觉反差或强烈悬念？
 5. **[断点钩子门禁]** 每集结尾是否卡在戏剧最高点或致命危机瞬间？严禁在对话完毕、危机解决后平淡收尾！
 6. **[双语对照门禁]** 出海剧本的英文对白是否附带准确传神、便于监制把握语气的中文潜台词？
+7. **[回钩门禁]**（长篇模式）第 2 集起，前 10 秒是否接住了上一集的钩子（兑现一半、再立新问题）？
+8. **[预算门禁]**（长篇模式）对白 + V.O. 是否在单集预算内（120 秒 ≈ 150–220 英文词）？场次是否 ≤ 4？
+9. **[账本门禁]**（长篇模式）信息差、道具状态、关系档位是否与 `03_连续性账本.md` 一致？
+
+---
+
+## 六、长篇改编模式（Long-Novel Mode）★
+
+**何时启用：** 原著 ≥ 20 章，或目标 ≥ 30 集，或用户提到"压缩到 N 集""分集大纲""整本改编"。
+**核心原则：** 集数由"可拍的强节拍"决定，不由章节数决定；**先规划、后写作**；**先找钩子点、再切集**。默认上限 60 集。
+
+详细方法：`references/long-novel-adaptation.md`（压缩工具箱、集数预算、分集卡片、单集 2 分钟结构）与 `references/episode-hook-system.md`（八种集尾钩子、强度阶梯、回钩写法、题材钩子库）。
+
+| 步 | 做什么 | 命令 / 模板 | 门禁 |
+| :--- | :--- | :--- | :--- |
+| L0 立项参数 | 集数上限、时长、平台、尺度、V.O.、删哪些番外、红线 | `templates/adaptation/00_改编参数.md` | **用户确认** |
+| L1 全书消化 | 扫描章节 → 按卷填节拍卡（summary / function / keep / emotion / hook_strength / info_changes） | `python3 scripts/chapter_index.py <正文目录>` | 每章节拍卡填完 |
+| L2 压缩决策 | 支线、角色、场景、重复桥段、前移、内心外化 | `templates/adaptation/02_压缩决策.md` | 每项有结论 + 理由 |
+| L3 集数预算 | 按卷的作用加权分配集数；查付费墙/中点/高潮位置 | 写 `adaptation/arcs.json` → `python3 scripts/episode_budget.py adaptation/arcs.json --chapters adaptation/chapters.json` | 总数 ≤ 上限 |
+| L4 分集大纲 | 每集：来源章节、回钩、目标、转折、≤4 场、集尾钩子（类型·强度·画面）、信息差 | 写 `adaptation/episodes.json` → `python3 scripts/outline_check.py adaptation/episodes.json --chapters adaptation/chapters.json --budget adaptation/budget.json` | ❌ 清零 + **用户逐集审过** |
+| L5 逐集写作 | 每批 5 集，按四步转译法写，套长篇模板 | `templates/adaptation/episode_template.md` → `python3 scripts/script_lint.py adaptation/scripts/` | ❌ 清零 |
+| L6 账本与审计 | 每批更新账本；每卷写完通读一遍 | `templates/adaptation/03_连续性账本.md` | 账本与剧本一致 |
+
+**执行纪律：**
+1. L1 按卷分批读（有复盘卡/摘要先读卡，再抽查原文的对白和章尾）；节拍卡写回 `chapters.json`，不要只写在对话里。
+2. L4 是整部剧质量的决定点：大纲没过用户审，不进 L5。
+3. L5 写每一集前，先读：本集大纲卡、上一集最后一场、连续性账本。
+4. 每集最后一行固定 `**【Episode NNN 完 · 集尾钩子：type】**`，钩子画面之后不再有台词。
+5. 题材钩子要对路：言情/马甲类用"通知、穿帮、距离、宣示、临界"，不要照搬打脸剧的耳光和枪口（见钩子系统第五节）。
+
+**长篇模式格式补充（兼容下游 AI 视频管线）：**
+- 场次标题用三个井号：`### 场 NN. 地点 · 内/外 · 时间`。
+- 说话人单独一行 `**Name**`；画外音 `**Name (V.O.)**`（后期配音，不进视频模型）。
+- 手机/屏幕文字：`【屏幕 · 发送方 → 接收方】` 下接以 `>` 开头的行，每块 ≤ 4 行（生成时屏幕留空，后期叠字）。
+- 开头信息区写：来源章节、开场回钩、本集目标、中段转折、集尾钩子、信息差。

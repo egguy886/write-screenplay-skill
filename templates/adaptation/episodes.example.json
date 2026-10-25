@@ -1,0 +1,47 @@
+{
+  "title": "Example Title",
+  "max_episodes": 60,
+  "episode_seconds": 120,
+  "dialogue_words_max": 220,
+  "paywall_after": 10,
+  "cut": [
+    {"chapters": "61-64", "reason": "平行世界番外，不进正剧"}
+  ],
+  "episodes": [
+    {
+      "ep": 1,
+      "title": "The Wrong Number",
+      "arc": "Vol1 Wrong Number",
+      "source": "1-2",
+      "scenes": [
+        {"place": "女主出租屋 · 夜", "summary": "发出分手短信并拉黑；银行 App 上一笔不敢花的钱"},
+        {"place": "私人俱乐部宴会厅 · 夜", "summary": "收到陌生转账附言；闺蜜认出号码主人"}
+      ],
+      "open_payoff": "",
+      "goal": "女主想在宴会上躲开所有人，熬过这一晚",
+      "turn": "转账附言 'Answer your phone.' —— 号码属于她新公司的老板",
+      "end_hook": {"type": "reveal", "level": "mid", "text": "他走进大厅，视线越过人群钉在她手腕的纹身上，抬手露出她几个月前寄出的钥匙扣"},
+      "info_state": "观众：他就是她撩了半年的人；女主：刚开始怀疑；男主：早就知道",
+      "props": ["旧钥匙扣", "手机", "银行 App"],
+      "paywall": false,
+      "chapters_note": "Ch2 的借口段落并入 E2 开场"
+    },
+    {
+      "ep": 2,
+      "title": "The Bet",
+      "arc": "Vol1 Wrong Number",
+      "source": "2-3",
+      "scenes": [
+        {"place": "私人俱乐部宴会厅 · 夜", "summary": "他走近，当众只说一句无关痛痒的客套话"},
+        {"place": "女主出租屋 · 深夜", "summary": "她解除拉黑，编出'打赌'的借口"}
+      ],
+      "open_payoff": "他停在她面前，只伸手替她扶正酒杯：'Careful. You're shaking.' —— 他没拆穿",
+      "goal": "女主要在他拆穿之前把谎圆上",
+      "turn": "解除拉黑三秒后，对方回复：'A bet. Interesting.'",
+      "end_hook": {"type": "question", "level": "small", "text": "他发来一张照片：她今晚在宴会上的背影。配字：'Same dress?'"},
+      "info_state": "女主以为他没认出她；观众知道他认出了",
+      "props": ["手机"],
+      "paywall": false
+    }
+  ]
+}

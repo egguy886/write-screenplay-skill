@@ -1,0 +1,17 @@
+{
+  "title": "Example Title",
+  "total_episodes": 60,
+  "max_episodes": 60,
+  "free_episodes": 10,
+  "cut_chapters": "61-64",
+  "fixed": {},
+  "arcs": [
+    {"name": "Vol1 Wrong Number", "chapters": "1-12", "role": "opening"},
+    {"name": "Vol2 Closer", "chapters": "13-24", "role": "build"},
+    {"name": "Vol3 Unmasked", "chapters": "25-36", "role": "midpoint"},
+    {"name": "Vol4 Honeymoon", "chapters": "37-44", "role": "sweet"},
+    {"name": "Vol5 Run", "chapters": "45-52", "role": "crisis"},
+    {"name": "Vol6 Confession", "chapters": "53-58", "role": "climax"},
+    {"name": "Vol7 Forever", "chapters": "59-60,65", "role": "resolution"}
+  ]
+}

@@ -19,6 +19,10 @@
   - 将抽象情绪“攥取外化”为演员可执行的物理动作与镜头画面。
 - 🎬 **AI 视频生成友好型动作解耦 (Prompt-Ready Action Decoupling)**
   - 针对 MiniMax H3、Kling、Runway Gen-3、Sora 等视频扩散模型的生成特性，强制拆解复杂多动量动作为“单动量原子微节拍”，彻底杜绝长句动作引起的肢体融化、多头多手和模型幻觉。
+- 📚 **长篇改编模式 (Long-Novel Mode)**
+  - 把几十到上百章的长篇压进固定集数（默认 ≤ 60 集）：章节节拍卡 → 压缩决策 → 集数预算 → 分集大纲 → 逐集写作 → 连续性账本。
+  - **集尾钩子系统**：八种钩子类型 + 强度阶梯 + 开场回钩，让每一集都像连载小说的章节一样停在钩子上。
+  - 四个零依赖脚本：`chapter_index.py`（章节扫描）、`episode_budget.py`（集数分配）、`outline_check.py`（大纲校验）、`script_lint.py`（单集检查）。
 - 🌐 **全主流平台适配 (Universal Compatibility)**
   - **AI 智能体平台**：Claude Code (`~/.claude/skills`)、Codex (`~/.codex/skills`)、Google Antigravity (`.agents/skills` / `.gemini/config/skills`)、xAI Grok (`~/.grok/skills`)、豆包等。
   - **分发平台**：国内（抖音、快手、腾讯微短剧、微信小程序），出海（ReelShort, DramaBox, ShortMax, FlexTV, TikTok）。
@@ -34,13 +38,21 @@
 ├── LICENSE                               # 开源协议 (MIT)
 ├── templates/                            # 标准剧本输出模板
 │   ├── chinese_script_template.md        # 国内中文短剧剧本模板
-│   └── overseas_script_template.md       # 出海短剧剧本模板（英文名+中文动作+英文对白）
+│   ├── overseas_script_template.md       # 出海短剧剧本模板（英文名+中文动作+英文对白）
+│   └── adaptation/                       # 长篇改编模板（参数、压缩决策、账本、分集大纲示例、单集模板）
 ├── references/                           # 深度工作流参考规范
 │   ├── novel-to-script-engine.md         # 小说因果剥离与戏剧化重构法
 │   ├── overseas-script-protocol.md       # 出海短剧主流题材与对白规范
-│   └── ai-friendly-beat-decoupling.md    # AI 视频动作解耦与防融化规范
+│   ├── ai-friendly-beat-decoupling.md    # AI 视频动作解耦与防融化规范
+│   ├── long-novel-adaptation.md          # 长篇改编引擎：压缩工具箱、集数预算、分集大纲
+│   └── episode-hook-system.md            # 集尾钩子系统：八种钩子、强度阶梯、回钩
 └── scripts/
-    └── install.py                        # 一键软链/安装到各大 Agent 平台的脚本
+    ├── install.py                        # 一键软链/安装到各大 Agent 平台的脚本
+    ├── chapter_index.py                  # L1 章节扫描 → chapters.json 节拍卡骨架
+    ├── episode_budget.py                 # L3 按卷加权分配集数
+    ├── outline_check.py                  # L4 分集大纲校验（覆盖率、钩子轮换、付费墙）
+    ├── script_lint.py                    # L5 单集剧本检查（格式、对白预算、钩子）
+    └── adapt_common.py                   # 公共工具
 ```
 
 ---
