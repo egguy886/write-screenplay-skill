@@ -49,6 +49,7 @@
 └── scripts/
     ├── install.py                        # 一键软链/安装到各大 Agent 平台的脚本
     ├── chapter_index.py                  # L1 章节扫描 → chapters.json 节拍卡骨架
+    ├── merge_cards.py                    # L1 节拍卡分卷合并
     ├── episode_budget.py                 # L3 按卷加权分配集数
     ├── outline_check.py                  # L4 分集大纲校验（覆盖率、钩子轮换、付费墙）
     ├── script_lint.py                    # L5 单集剧本检查（格式、对白预算、钩子）

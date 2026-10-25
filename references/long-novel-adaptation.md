@@ -24,7 +24,7 @@
 | 步 | 产物 | 工具 | 门禁 |
 | :--- | :--- | :--- | :--- |
 | L0 立项参数 | `adaptation/00_改编参数.md` | 模板 | 用户确认：集数上限、单集时长、平台、尺度、V.O. 用量、要删的番外 |
-| L1 全书消化 | `adaptation/chapters.json` + `01_章节索引.md` | `scripts/chapter_index.py` 先扫字数/对白比/章尾段，再由 Agent 按卷填写节拍卡 | 每章都有 summary / function / keep / hook_strength |
+| L1 全书消化 | `adaptation/chapters.json` + `01_章节索引.md` | `scripts/chapter_index.py` 先扫字数/对白比/短信量/章尾段，Agent 按卷填写节拍卡，`scripts/merge_cards.py` 合并 | 每章都有 summary / function / keep / hook_strength；**已核对正文章尾** |
 | L2 压缩决策 | `adaptation/02_压缩决策.md` | 压缩工具箱（本文第三节） | 每条支线、每个配角、每个场景都有"保留/合并/删除/浓缩"结论 |
 | L3 集数预算 | `adaptation/arcs.json` → `budget.md` | `scripts/episode_budget.py` | 总集数 ≤ 上限；付费点、中点、高潮落在规定区间 |
 | L4 分集大纲 | `adaptation/episodes.json` → `04_分集大纲.md` | `scripts/outline_check.py` | ❌ 清零；**用户逐集审过**（最重要的一关） |
@@ -49,6 +49,10 @@
 | `hook_strength` | 章尾钩子强度（拍出来是否仍然抓人） | 1–5 |
 | `info_changes` | 信息差变化：谁新知道了什么 | 列表 |
 | `props` | 本章出现/改变状态的关键道具 | 列表 |
+
+**⚠ 以正文为准，不以细纲/复盘卡为准。** 原著常有"细纲 ≠ 成稿"：章尾钩子、出场人物、地点、甚至人物姓氏会和大纲不一致（实战中发现：同一人物三种姓氏、楼层前后矛盾、章尾落点改变）。节拍卡先用细纲/复盘卡起草，但**每一章必须核对正文的开头、中段、章尾**；集尾钩子一律取正文真实章尾；发现的矛盾记入 `02_压缩决策.md` 第 0 节"设定统一口径"。写 L5 时每集的来源章节仍要**通读正文**。
+
+节拍卡太多时分卷写成 `adaptation/cards/vN.py`，用 `python3 scripts/merge_cards.py adaptation/chapters.json adaptation/cards/` 合并。
 
 **可拍性速判：** 对白占比 < 15% 且 function 是 breather / filler 的章，几乎都是 `montage` 或 `cut` 候选。
 
