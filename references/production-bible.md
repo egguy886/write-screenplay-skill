@@ -14,7 +14,7 @@
 | :--- | :--- | :--- | :--- |
 | **戏剧层** | 编剧 | `role` `want` `need` `misbelief` `arc` `pressure_choices` `contradiction` `first_entrance` | 见 `character-and-dialogue.md` |
 | **语言层** | 编剧/配音 | `voice_sheet`：`rhythm` `vocabulary` `catchphrases` `never_says` `tells` | 每个主角 3 条口头禅以内；写"绝不会说的话"比写"会说的话"更能锁住人设 |
-| **视觉层** | 美术/生图 | `gender`；`visual`：`age` `height` `build` `face` `hair` `skin` `signature` + **`en`（一句英文外貌，直接进生图提示词）**；`wardrobe`（造型 ID 列表） | 只写镜头看得见的；**每个主角一个标志性视觉符号**（红痣、旧手绳） |
+| **视觉层** | 美术/生图 | `gender`；`visual`：`age` `height` `build` `face` `hair` `skin` `signature` + **`en`（一句英文外貌，直接进生图提示词）**；`wardrobe`（造型 ID 列表） | 只写镜头看得见的；**每个主角一个标志性视觉符号**（一颗痣、一件旧饰物） |
 | **声音层** | 配音/选声 | `voice_casting`：`tier` `timbre` `pitch` `pace` `accent` `age_anchor` `reference` + `en`（英文控制词） | 用可听辨的词（低沉、气声、语速慢），不写"好听" |
 | 表演层（可选） | 导演/视频提示词 | `acting`：`engine` `body` `eyes` `tics` | 每个主角 2–3 个习惯动作，写清触发条件 |
 
@@ -26,9 +26,9 @@
 
 | 类 | 规则 | 例 |
 | :--- | :--- | :--- |
-| 人物 | `C01`…（主角从 C01 起） | `C01` Wren |
-| 造型 | `<人物ID>-<造型名>`，**同一人换衣服/换状态 = 新 ID** | `C01-SHARK`（灰卫衣+鲨鱼拖鞋）、`C01-GALA`、`C02-SUIT`、`C02-WET`（暴雨湿透） |
-| 道具 | `P01`…；**完整/损坏/带血是不同资产** | `P05` 旧手绳、`P05B` L&W 金扣新手绳 |
+| 人物 | `C01`…（主角从 C01 起） | `C01` Ivy |
+| 造型 | `<人物ID>-<造型名>`，**同一人换衣服/换状态 = 新 ID** | `C01-HOME`（灰卫衣+鲨鱼拖鞋）、`C01-GALA`、`C02-SUIT`、`C02-WET`（暴雨湿透） |
+| 道具 | `P01`…；**完整/损坏/带血是不同资产** | `P02` 旧钥匙扣、`P02B` 换上的新钥匙扣 |
 | 场景 | `<D/N/R>-<地点>`：白天/夜晚/雨天分开 | `N-AURELIAN-HALL`、`D-AURELIAN-HALL`、`R-SAWMILL` |
 
 一个造型 ID 对应一张参考图。剧本里写名字即可，`bible.json` 用 `aliases` 把名字映射到 ID。
@@ -50,7 +50,7 @@
 每件关键道具写：`first_ep` 首次出现 → `states`（集号:状态） → `payoff_ep` 回收集。
 - 道具的参考图画**"动作之前"的状态**（信封是封着的、手机屏幕是空白的）。
 - 屏幕/标签/文件上的文字一律留空，后期叠字。
-- 与人物绑定的标志道具（手绳、挂件）同时写进人物 `signature`，并写清**左右手/佩戴位置**——AI 最容易左右颠倒。
+- 与人物绑定的标志道具（饰物、挂件）同时写进人物 `signature`，并写清**左右手/佩戴位置**——AI 最容易左右颠倒。
 - 三次法则：一件道具至少出现三次（建立 → 强化 → 回收），只出现一次的道具考虑删掉或换成场景陈设。
 
 ---
