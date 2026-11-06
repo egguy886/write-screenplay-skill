@@ -28,6 +28,8 @@ def get_target_directories():
         home / ".claude" / "skills" / SKILL_NAME,
         # Codex CLI
         home / ".codex" / "skills" / SKILL_NAME,
+        # Local Workspace .agents/skills/write-screenplay (if inside a project workspace)
+        CURRENT_DIR.parent / ".agents" / "skills" / SKILL_NAME,
     ]
     return targets
 

@@ -28,11 +28,14 @@ def main():
     ap.add_argument('episodes_json')
     ap.add_argument('--chapters', help='chapters.json：核对每章都被覆盖或明确删除')
     ap.add_argument('--budget', help='budget.json：核对每集所属卷与预算一致')
+    ap.add_argument('--mode', choices=['adaptation', 'original'], default='adaptation',
+                    help='adaptation=长篇小说改编（核对来源章节）；original=原创/世界观设定集直出（免章节号核对）')
     ap.add_argument('--max-scenes', type=int, default=4)
     a = ap.parse_args()
 
     path = Path(a.episodes_json)
     cfg = json.loads(path.read_text(encoding='utf-8'))
+    is_orig = (a.mode == 'original') or (str(cfg.get('mode', '')).lower() in ('original', 'lore'))
     eps = sorted(cfg.get('episodes', []), key=lambda e: e.get('ep', 0))
     cap = int(cfg.get('max_episodes', 60))
     paywall = cfg.get('paywall_after')
@@ -54,9 +57,13 @@ def main():
         cut.update(parse_ranges(c.get('chapters')))
     used, last_max = Counter(), 0
     for e in eps:
-        src = parse_ranges(e.get('source'))
+        raw_src = str(e.get('source', '')).strip()
+        if is_orig and (not raw_src or raw_src.lower().startswith(('orig', 'lore', 'unit', '原创', '设定'))):
+            continue
+        src = parse_ranges(raw_src)
         if not src:
-            errs.append(f'{E(e)} 没写来源章节 source')
+            if not is_orig:
+                errs.append(f'{E(e)} 没写来源章节 source（原创/设定集模式请加 --mode original 或在 JSON 顶层设 "mode": "original"）')
             continue
         used.update(src)
         if min(src) < last_max - 3 and not e.get('chapters_note'):

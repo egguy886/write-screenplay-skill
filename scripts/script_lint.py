@@ -20,6 +20,8 @@ from pathlib import Path
 
 INTERIOR = ['心想', '心里', '内心', '心中', '暗想', '回忆起', '想起', '意识到', '感到', '觉得', '不由得', '心头', '暗暗决定']
 CHAINS = ['随即', '然后', '顺势', '接着', '紧接着', '同时', '并且', '一边', '随后']
+MASS_CROWD = ['数万', '上万', '成千上万', '数百名', '三千', '千军万马', '万人广场']
+SEG_TAG = re.compile(r'\b(M0[1-8])\b')
 SPEAKER = re.compile(r'^\*\*([^*【]+?)\*\*\s*$')
 EN_NAME = re.compile(r"^[A-Za-z][A-Za-z0-9 .'\-]*(\s*\((V\.O\.|O\.S\.|O\.C\.)\))?$")
 QUOTE_LINE = re.compile(r'^\s*[“"](.+)[”"]\s*$')
@@ -66,8 +68,14 @@ def lint(path, a):
     speaker = None
     last_dialogue_idx = -1
     screen_run, in_screen = 0, False
+    cur_seg = None
+    seg_words = {}
     for i, raw in enumerate(content):
         s = raw.strip()
+        sm = SEG_TAG.search(s)
+        if sm:
+            cur_seg = sm.group(1)
+            seg_words.setdefault(cur_seg, 0)
         m = SPEAKER.match(s)
         if m and not END_LINE.match(s):
             speaker = m.group(1).strip()
@@ -82,6 +90,8 @@ def lint(path, a):
                 vo_words += n
             else:
                 dlg_words += n
+            if cur_seg:
+                seg_words[cur_seg] = seg_words.get(cur_seg, 0) + n
             last_dialogue_idx = i
             if a.mode == 'overseas':
                 if CJK.search(text):
@@ -106,6 +116,9 @@ def lint(path, a):
             hit = [w for w in INTERIOR if w in act]
             if hit:
                 warns.append(f'动作行写了心理（{"/".join(hit)}）→ 外化成动作/道具/屏幕：{act[:30]}')
+            crowd_hit = [w for w in MASS_CROWD if w in act]
+            if crowd_hit:
+                warns.append(f'动作行含 AI 视频高危宏大群演词（{"/".join(crowd_hit)}）→ 建议降维为 2-3 人前景特写+局部背景：{act[:30]}')
             chain = sum(act.count(w) for w in CHAINS)
             if chain >= 2:
                 warns.append(f'一行里动作太多（{chain} 个连接词）→ 拆成多行，一行一个动作：{act[:30]}')
@@ -113,6 +126,10 @@ def lint(path, a):
                 warns.append(f'动作行过长（{len(CJK.findall(act))} 字）→ 拆行：{act[:30]}')
         elif s.startswith('#') or s.startswith('**出场') or s.startswith('**核心'):
             speaker = None
+
+    for seg, cnt in sorted(seg_words.items()):
+        if cnt > a.seg_words:
+            warns.append(f'分段 {seg} 对白 {cnt} 词，超过 15 秒微切片上限 {a.seg_words} 词（易导致 H3/Kling 吞字或口型加速）')
 
     # 集尾
     end_idx = next((i for i in range(len(content) - 1, -1, -1) if END_LINE.match(content[i].strip())), None)
@@ -144,6 +161,7 @@ def main():
     ap.add_argument('paths', nargs='+')
     ap.add_argument('--mode', choices=['overseas', 'cn'], default='overseas')
     ap.add_argument('--words', type=int, default=220, help='对白+V.O. 上限（英文词；cn 模式为汉字数，建议 400）')
+    ap.add_argument('--seg-words', type=int, default=28, help='单段 15 秒微切片（M01-M08）对白上限（英文词默认 28，cn 模式建议 55）')
     ap.add_argument('--seconds', type=int, default=120)
     ap.add_argument('--max-scenes', type=int, default=4)
     a = ap.parse_args()
