@@ -44,20 +44,25 @@ def install_skill():
             target_parent = target.parent
             target_parent.mkdir(parents=True, exist_ok=True)
 
-            # If existing link or directory, clean up
+            # If existing link or file, clean up; if directory, overlay non-git files cleanly (avoids Windows .git WinError 5)
             if target.is_symlink() or target.is_file():
                 target.unlink()
-            elif target.is_dir():
-                shutil.rmtree(target)
 
-            # Try creating symlink first
-            try:
-                target.symlink_to(CURRENT_DIR, target_is_directory=True)
-                print(f"[SUCCESS] Symlinked to: {target}")
-            except (OSError, NotImplementedError):
-                # Fallback to copy on Windows if symlink privilege not available
-                shutil.copytree(CURRENT_DIR, target, dirs_exist_ok=True)
-                print(f"[SUCCESS] Copied to: {target}")
+            if not target.exists():
+                try:
+                    target.symlink_to(CURRENT_DIR, target_is_directory=True)
+                    print(f"[SUCCESS] Symlinked to: {target}")
+                    continue
+                except (OSError, NotImplementedError):
+                    pass
+
+            shutil.copytree(
+                CURRENT_DIR,
+                target,
+                dirs_exist_ok=True,
+                ignore=shutil.ignore_patterns('.git', '__pycache__', '*.pyc'),
+            )
+            print(f"[SUCCESS] Synced to: {target}")
 
         except Exception as e:
             print(f"[WARN] Failed to install to {target}: {e}")
