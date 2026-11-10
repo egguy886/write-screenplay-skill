@@ -132,21 +132,21 @@ Build the production bible for the main cast and export it for my AI video pipel
 
 Scene headings use `### 场 NN.` and speakers use `**Name**`, so scripts load directly into downstream dialogue-locking tools. Voice-over (`**Name (V.O.)**`) and on-screen text (`【屏幕 · A → B】`) are kept out of the video model and added in post.
 
-## Quality gates
+## Quality gates (v4.1, three tiers)
 
-Every script is checked before delivery:
+**A. Universal — every script, every genre**
+1. **Naming** — overseas scripts use English character names only. *(lint ❌)*
+2. **No self-narration** — characters never explain their own state to the air. *(lint ⚠, generic patterns, EN + CN)*
+3. **No recap / no cheerleading** — nobody recaps what everyone in the room already knows; villains don't gasp "how is this possible". *(lint ⚠)*
+4. **Real subtext** — the Chinese subtext note carries what goes unsaid, not a translation. *(lint ⚠ on the episode's literal-translation ratio)*
+5. **Masked-name test** — cover the speaker names; you can still tell who is talking.
+6. **Cliffhanger & open-payoff** — end before the answer lands; from episode 2, pay off the last hook in the first 10 seconds.
+7. **Assets & continuity** — characters, outfits, props, locations and information state match the bible and ledger. *(`bible_check.py`)*
+8. **Viewer test** — a reader who never read the novel retells the episode; < 7/10 or a confusion repeated in ≥ 2 runs means rewrite. The only gate judged by results. *(`viewer_test.py`, average ≥ 3 runs)*
 
-1. **Naming** — overseas scripts use English character names only.
-2. **Decoupling** — no action line carries more than two compound movements.
-3. **Visual only** — no unfilmable interior monologue; externalise it.
-4. **Three-second hook** — episode 1 grabs in the first three seconds.
-5. **Cliffhanger** — every episode ends on the moment before the answer lands.
-6. **Bilingual** — every English line has a Chinese subtext note.
-7. **Open-payoff** *(long mode)* — the first 10 seconds pay off the previous hook.
-8. **Budget** *(long mode)* — dialogue + V.O. within budget (~220 words per 2 minutes); ≤4 scenes.
-9. **Continuity** *(long mode)* — information state, props and relationship match the ledger.
-10. **Character** — every speaker matches their voice sheet; the lead makes a costly choice.
-11. **Assets** — every character, outfit, key prop and location exists in the bible.
+**B. Genre gates — pick by genre** (`references/genre-gates.md`): opening hook, siding with the lead, the opposition's reasons, "why don't they just…", how they got there, a first-episode payoff. Same question for every genre, different answer: an action pilot may open on a crane-down; a romance pilot opens on the awkward event. `script_lint.py --genre` checks the opening.
+
+**C. Handed to storyboarding** — one space per 15-second segment, one movement per shot, matched cuts across segment seams, ≤ 26 words per segment. These live in h3-drama-kit, not in the script; scripts state a total runtime only.
 
 ## Related
 

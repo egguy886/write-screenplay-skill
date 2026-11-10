@@ -1,7 +1,7 @@
 # 出海短剧标准剧本模板（Overseas Micro-Drama Script Template）
 
 > **Title**: 《[English Title, e.g., The Alpha's Secret Heir / Dragon's Redemption]》  
-> **Episodes**: [e.g., 60~80 eps] | **Duration**: 90s ~ 120s per episode  
+> **Episodes**: [e.g., 60~80 eps] | **Duration**: 90s ~ 180s per episode (pilot / paywall eps up to 225s)  
 > **Target Platforms**: ReelShort / DramaBox / ShortMax / FlexTV / TikTok  
 > **Genre**: [Werewolf & Lycan / Billionaire in Disguise / Mafia Romance / Revenge & Second Chance]  
 > **Language Rule**: **角色名严格使用英文，场景与动作调度使用中文，对白为地道英文并附带中文潜台词！**

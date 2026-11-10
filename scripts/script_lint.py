@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-L5 单集剧本编导一体质检器 v4.0（Cinematic Showrunner Edition）：
-支持弹性电影片长（M01–M20 动态微切片）、首集世界观俯瞰与人物温度门禁、一段一空间检查、
-AI 说明书独白 / 捧哏惊叹 / 伪潜台词雷达、动作解耦与集尾钩子硬门禁。
+L5 单集剧本质检器 v4.1：
+通用门禁（A 层）：英文角色名、去 AI 腔（说明书独白 / 复述 / 捧哏，通用句式，中英文都查）、
+整集潜台词直译比例、回钩与集尾格式、比喻与心理描写、叠字数量、v2 拍表；
+题材门禁（B 层，--genre 选用）：目前只查 G1 首集开场（action 要定场，romance 别用大远景定场）。
+分镜层规则（一段一空间、每 15 秒词数）交给 h3-drama-kit；剧本里若仍标了 Mxx，才顺带提示。
 
 用法：
-  python scripts/script_lint.py <剧本文件或目录>... [--mode overseas|cn] [--seg-words 28]
-  （若剧本头部声明了 `**时长**：195 秒（13 段 × 15 秒）`，自动按该时长动态计算词数预算与场次上限！）
+  python scripts/script_lint.py <剧本文件或目录>... [--mode overseas|cn] [--genre action|revenge|romance|suspense|family]
+  （剧本头部声明 `**时长**：195 秒` 时，按该时长放宽词数预算与场次上限）
 """
 import argparse
 import re
@@ -19,15 +21,28 @@ SIMILE = re.compile(r'像[^，。、]{0,14}|仿佛|好像|似的')   # 比喻句
 CHAINS = ['随即', '然后', '顺势', '接着', '紧接着', '同时', '并且', '一边', '随后']
 MASS_CROWD = ['数万', '上万', '成千上万', '数百名', '三千', '千军万马', '万人广场']
 
-# AI 腔高危台词模式（说明书自言自语 / 反派廉价捧哏 / 新闻播报式前情复述）
-AI_DIALOGUE_PATTERNS = [
-    (re.compile(r"\bobeying me\b|\bwon't move\b|\bfade back\b|\beating my flesh\b", re.I),
-     '疑似「AI 说明书式自言自语」→ 建议删掉解说独白，改用沉默、呼吸与直接物理行动'),
-    (re.compile(r"\bwhat monster is (he|she|this)\b|\bsupposed to be ash\b|\bin one punch\?!", re.I),
-     '疑似「反派捧哏工具人惊叹词」→ 建议改为实质威胁动作或简短失态指令'),
-    (re.compile(r"\bmelted my hand,?\s+so\b|\blast night,?\s+so\b", re.I),
-     '疑似「新闻播报式前情复述」→ 在场人已知的事实不要用嘴复盘'),
+# AI 腔高危台词（v4.1：通用句式，不再只认示例剧本原话）。每条：(正则, 提示)
+AI_EN = [
+    (re.compile(r"\bmy (?:body|hands?|legs?|arms?|heart|blood|power|eyes?)\b[^.?!]{0,25}\b(?:won't|can't|isn't|is|are|keeps?)\b[^.?!]{0,15}\b(?:move|stop|listen|obey|respond|burn\w*|glow\w*|shak\w*|changing)\b"
+                r"|\bit'?s (?:obeying|answering|responding to|listening to|controlling) me\b|\bwhat(?:'s| is) happening to me\b|\bthis (?:power|fire|energy|feeling|strength)\b[^.?!]{0,20}\b(?:is|it's)\b"
+                r"|\bI can feel (?:it|the power|my)\b", re.I),
+     '疑似「说明书式自言自语」（对空气解说自己的状态）→ 改用沉默、眼神和直接的物理动作'),
+    (re.compile(r"\b(?:as you (?:all )?know|as we (?:all )?know|you (?:already )?know (?:that|how) (?:I|we|he|she)|like I (?:said|told you)|remember (?:when|how) (?:you|we|I)|(?:last night|yesterday),? (?:you|he|she|we|they) [^.?!]{3,40},? (?:so|and then|which is why)\b)", re.I),
+     '疑似「新闻播报式复述」（向在场的人复述大家都知道的事）→ 删掉，或改成只有观众不知道的那一半'),
+    (re.compile(r"\bwhat (?:kind of )?(?:monster|demon|power|strength)\b[^.?!]{0,12}\b(?:is|was|does) (?:he|she|this|that)\b|\bhow is (?:this|that) (?:even )?possible\b|\b(?:impossible|that's impossible)[!?]"
+                r"|\bwho (?:the hell )?is (?:he|she|this guy|this woman)\?!|\bin (?:one|a single) (?:punch|blow|hit|strike)\b", re.I),
+     '疑似「捧哏惊叹」（替主角喊“怎么可能”）→ 改成后退、手抖、换弹匣等失态动作，或一句实际的命令'),
 ]
+AI_CN = [
+    (re.compile(r"我的(?:身体|手|腿|心脏|血|力量)[^。！？]{0,8}(?:不受控制|动不了|在燃烧|在发光|在颤抖)|这股力量|它在(?:听我的|回应我)|我感觉到了[^。！？]{0,6}力量|我这是怎么了"),
+     '疑似「说明书式自言自语」→ 改用沉默、眼神和动作'),
+    (re.compile(r"你也知道|大家都知道|我早就说过|还记得(?:吗|那天|昨晚)|昨晚你[^。！？]{2,20}所以"),
+     '疑似「复述腔」→ 在场的人都知道的事不要用嘴复盘'),
+    (re.compile(r"怎么可能[！?？!]|这不可能|他(?:到底)?是什么(?:怪物|人)[！?？!]|一拳就|竟然[^。！？]{0,10}[！!]{1}"),
+     '疑似「捧哏惊叹」→ 改成失态动作或实际行动'),
+]
+# 潜台词是不是“直译”：只看整集比例（单句判断不准）。真潜台词通常带意图词。
+INTENT = re.compile(r"其实|故意|试探|逼|借机|掩饰|假装|装作|心里|真正|不敢|不想让|偏要|暗示|提醒|警告|讨好|拖延|拿捏|算计|激他|激她|威胁|示好|撒娇|嘴硬|台阶|赌|怕|想让|想要|要他|要她|别想|潜意|言外|——")
 
 SEG_TAG = re.compile(r'\b(M(?:0[1-9]|1[0-9]|20))\b')
 HEADER_DUR = re.compile(r'\*\*时长\*\*[:：]\s*(\d+)\s*秒')
@@ -100,6 +115,7 @@ def lint(path, a):
     cur_seg = None
     cur_scene_no = 0
     seg_words = {}
+    n_sub = n_literal = 0
     seg_scenes = {}
     m01_actions = []
 
@@ -137,9 +153,15 @@ def lint(path, a):
                 seg_words[cur_seg] = seg_words.get(cur_seg, 0) + n
             last_dialogue_idx = i
 
-            for rx, hint in AI_DIALOGUE_PATTERNS:
+            for rx, hint in (AI_CN if a.mode == 'cn' else AI_EN):
                 if rx.search(text):
                     warns.append(f'{speaker}: "{text[:42]}" → {hint}')
+            sub_line = next((c.strip() for c in content[i + 1:i + 3] if '中文潜台词' in c), '')
+            if sub_line:
+                sub = re.sub(r'^（?中文潜台词[:：]\s*|）$', '', sub_line)
+                n_sub += 1
+                if not INTENT.search(sub) and len(CJK.findall(sub)) <= 2.4 * max(n, 1) + 6:
+                    n_literal += 1
 
             if a.mode == 'overseas':
                 if CJK.search(text):
@@ -182,20 +204,26 @@ def lint(path, a):
         elif s.startswith('#') or s.startswith('**出场') or s.startswith('**核心') or s.startswith('**造型'):
             speaker = None
 
-    # 首集电影级开场定场检查（仅提示 EP001）
-    if ep_no == 1 and m01_actions:
-        joined_m01 = ' '.join(m01_actions)
-        if not any(k in joined_m01 for k in ('大远景', '远景', '俯瞰', '俯视', '航拍', '全景', 'Crane Down')):
-            warns.append('EP001 开场 M01 缺少世界观大远景/俯瞰定场镜头（易导致首集开头过硬、缺乏空间锚点）')
+    # 题材门禁 G1（只在选了题材时查 EP001 开场）
+    WIDE = ('大远景', '远景', '俯瞰', '俯视', '航拍', '俯降', 'Crane Down')
+    if ep_no == 1 and m01_actions and a.genre:
+        joined = ' '.join(m01_actions[:2])
+        if a.genre == 'action' and not any(k in ' '.join(m01_actions) for k in WIDE + ('全景',)):
+            warns.append('[G1 action] EP001 开头缺定场镜头（大远景 / 俯降），观众没有空间和尺度的锚点')
+        if a.genre == 'romance' and any(k in joined for k in WIDE):
+            warns.append('[G1 romance] EP001 开头用了大远景 / 航拍定场：言情开场直接进尴尬或心动事件更快（genre-gates.md G1）')
 
-    # 一段一空间检查
+    # 潜台词直译比例（A4）
+    if n_sub >= 8 and n_literal / n_sub > 0.7:
+        warns.append(f'[A4] 中文潜台词 {n_literal}/{n_sub} 句像台词直译（没有试探、掩饰、怕、故意之类的意图）→ 至少把关键几句写成没说出口的话')
+
+    # 分镜层（剧本里若仍标了 Mxx 才提示；规则本身在 h3-drama-kit 执行）
     for seg, sc_set in sorted(seg_scenes.items()):
         if len(sc_set) > 1:
-            warns.append(f'分段 {seg} 横跨了多个场次 {sorted(sc_set)} → 违反「一段一主空间」铁律，易造成 AI 视频空间瞬移穿帮')
-
+            warns.append(f'[分镜层] {seg} 横跨场次 {sorted(sc_set)}：剧本可以不切段，交给分镜按一段一空间切')
     for seg, cnt in sorted(seg_words.items()):
         if cnt > a.seg_words:
-            warns.append(f'分段 {seg} 对白 {cnt} 词，超过 15 秒微切片上限 {a.seg_words} 词（易导致 H3/Kling 吞字或口型加速）')
+            warns.append(f'[分镜层] {seg} 对白 {cnt} 词 > {a.seg_words}：剧本可以不切段，交给分镜拆')
 
     # 集尾
     end_idx = next((i for i in range(len(content) - 1, -1, -1) if END_LINE.match(content[i].strip())), None)
@@ -243,7 +271,8 @@ def main():
     ap.add_argument('paths', nargs='+')
     ap.add_argument('--mode', choices=['overseas', 'cn'], default='overseas')
     ap.add_argument('--words', type=int, default=220, help='120s 基准对白+V.O.上限（若剧本头部声明更长秒数则按比例自动放宽）')
-    ap.add_argument('--seg-words', type=int, default=28, help='单段 15 秒微切片对白上限（英文词默认 28，cn 模式建议 55）')
+    ap.add_argument('--genre', choices=['action', 'revenge', 'romance', 'suspense', 'family'], help='题材（选用 genre-gates.md 对应的题材门禁）')
+    ap.add_argument('--seg-words', type=int, default=28, help='（分镜层，仅剧本标了 Mxx 时用）单段 15 秒对白上限')
     ap.add_argument('--seconds', type=int, default=120, help='默认基准时长（会被剧本头部的 **时长**：XXX 秒 自动覆盖）')
     ap.add_argument('--max-scenes', type=int, default=4, help='120s 基准最大场数（长集自动按比例放宽）')
     a = ap.parse_args()
