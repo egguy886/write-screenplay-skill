@@ -14,9 +14,12 @@ def resolve_codex_bin():                       # 用 ChatGPT.app 自带的 codex
     return mac if os.path.exists(mac) else 'codex'
 
 def viewable(path):
-    out = []
+    out = []; screen = False
     for l in open(path, encoding='utf-8'):
         s = l.rstrip('\n')
+        if s.startswith('【屏幕'): screen = True; out.append(s); continue
+        if screen and s.startswith('>'): out.append('[on-screen text] ' + s.lstrip('> ')); continue   # 屏幕/短信文字观众看得到，保留
+        screen = False
         if s.startswith(('>', '|', '<!--')) or s.startswith('（中文潜台词') or s.startswith('**核心道具') or s.startswith('**冲突') \
            or s.startswith('**造型') or s.startswith('**陈设') or s.startswith('**出场人物') or s.startswith('**【Episode'):
             continue
