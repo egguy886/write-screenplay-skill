@@ -15,6 +15,7 @@ import sys
 from pathlib import Path
 
 INTERIOR = ['心想', '心里', '内心', '心中', '暗想', '回忆起', '想起', '意识到', '感到', '觉得', '不由得', '心头', '暗暗决定']
+SIMILE = re.compile(r'像[^，。、]{0,14}|仿佛|好像|似的')   # 比喻句拍不出来（v2 规范）
 CHAINS = ['随即', '然后', '顺势', '接着', '紧接着', '同时', '并且', '一边', '随后']
 MASS_CROWD = ['数万', '上万', '成千上万', '数百名', '三千', '千军万马', '万人广场']
 
@@ -170,6 +171,9 @@ def lint(path, a):
             crowd_hit = [w for w in MASS_CROWD if w in act]
             if crowd_hit:
                 warns.append(f'动作行含 AI 视频高危宏大群演词（{"/".join(crowd_hit)}）→ 建议降维为 2-3 人前景特写+局部背景：{act[:30]}')
+            sm = SIMILE.search(act)
+            if sm and not act.startswith('（想象'):
+                warns.append(f'动作行有比喻「{sm.group(0)[:14]}」→ 镜头拍不出来，换成能拍的动作或删掉（v2 规范）：{act[:30]}')
             chain = sum(act.count(w) for w in CHAINS)
             if chain >= 2:
                 warns.append(f'一行里动作太多（{chain} 个连接词）→ 拆成多行，一行一个动作：{act[:30]}')
@@ -205,6 +209,20 @@ def lint(path, a):
         tail = content[max(0, end_idx - 3):end_idx]
         if not any(t.strip().startswith('△') for t in tail) and last_dialogue_idx < end_idx - 4:
             warns.append('集尾最后几行没有画面（△），钩子要落在可拍的画面或台词上')
+
+    # —— v2 规范（观众先看懂）：叠字总量；若剧本用了 v2 信息区（有「本集一句话」），要求拍表和“上集观众记得什么” ——
+    text = '\n'.join(content)
+    n_overlay = len(re.findall(r'后期叠字', text))
+    if n_overlay > 4:
+        warns.append(f'后期叠字 {n_overlay} 处（建议 ≤2 处、每处 ≤6 个英文词；看懂测试里叠字揭秘最容易看不懂）')
+    if '本集一句话' in '\n'.join(content[:20]):
+        if '上集观众记得什么' not in '\n'.join(content[:20]):
+            warns.append('v2 信息区缺「上集观众记得什么」（只写观众真在画面里见过的）')
+        n_tab = len(re.findall(r'^\|\s*拍\s*\|', text, re.M))
+        if n_tab < len(scenes):
+            warns.append(f'v2：每场要有一张拍表（观众要懂 / 画面证据 / 台词 / 反应 / 必保），现在 {n_tab} 张、{len(scenes)} 场')
+        if '| ✔ |' not in text and '✔ |' not in text:
+            warns.append('v2：拍表里没有任何「必保 ✔」的拍；分镜靠它才知道哪几镜不能删')
 
     total = dlg_words + vo_words
     if total > ep_word_limit:
