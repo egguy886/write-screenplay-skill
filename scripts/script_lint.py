@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-L5 单集剧本质检器 v4.1：
-通用门禁（A 层）：英文角色名、去 AI 腔（说明书独白 / 复述 / 捧哏，通用句式，中英文都查）、
-整集潜台词直译比例、回钩与集尾格式、比喻与心理描写、叠字数量、v2 拍表；
-题材门禁（B 层，--genre 选用）：目前只查 G1 首集开场（action 要定场，romance 别用大远景定场）。
-分镜层规则（一段一空间、每 15 秒词数）交给 h3-drama-kit；剧本里若仍标了 Mxx，才顺带提示。
+L5 单集剧本质检器 v4.2（全画幅电影视听 & 弹性片长版）：
+通用门禁（A 层）：角色名规范、去 AI 腔（说明书独白 / 复述 / 捧哏，通用句式，中英文都查）、
+整集潜台词直译比例、回钩与集尾强钩子格式、比喻与心理描写、叠字数量、v2 拍表；
+画幅与弹性片长适配：支持 9:16 竖屏与 16:9 / 2.39:1 横屏电影大片模式，剧情与视听优先、时长不设死限，
+自动根据头部声明的 `**时长**：XXX 秒/分钟` 与 `**画幅**：16:9 / 9:16` 线性匹配对白容量、场次数与呼吸节奏。
 
 用法：
-  python scripts/script_lint.py <剧本文件或目录>... [--mode overseas|cn] [--genre action|revenge|romance|suspense|family]
-  （剧本头部声明 `**时长**：195 秒` 时，按该时长放宽词数预算与场次上限）
+  python scripts/script_lint.py <剧本文件或目录>... [--mode overseas|cn] [--aspect auto|9:16|16:9|2.39:1] [--genre action|revenge|romance|suspense|family]
 """
 import argparse
 import re
@@ -17,11 +16,10 @@ import sys
 from pathlib import Path
 
 INTERIOR = ['心想', '心里', '内心', '心中', '暗想', '回忆起', '想起', '意识到', '感到', '觉得', '不由得', '心头', '暗暗决定']
-SIMILE = re.compile(r'像[^，。、]{0,14}|仿佛|好像|似的')   # 比喻句拍不出来（v2 规范）
+SIMILE = re.compile(r'像[^，。、]{0,14}|仿佛|好像|似的')
 CHAINS = ['随即', '然后', '顺势', '接着', '紧接着', '同时', '并且', '一边', '随后']
 MASS_CROWD = ['数万', '上万', '成千上万', '数百名', '三千', '千军万马', '万人广场']
 
-# AI 腔高危台词（v4.1：通用句式，不再只认示例剧本原话）。每条：(正则, 提示)
 AI_EN = [
     (re.compile(r"\bmy (?:body|hands?|legs?|arms?|heart|blood|power|eyes?)\b[^.?!]{0,25}\b(?:won't|can't|isn't|is|are|keeps?)\b[^.?!]{0,15}\b(?:move|stop|listen|obey|respond|burn\w*|glow\w*|shak\w*|changing)\b"
                 r"|\bit'?s (?:obeying|answering|responding to|listening to|controlling) me\b|\bwhat(?:'s| is) happening to me\b|\bthis (?:power|fire|energy|feeling|strength)\b[^.?!]{0,20}\b(?:is|it's)\b"
@@ -41,11 +39,11 @@ AI_CN = [
     (re.compile(r"怎么可能[！?？!]|这不可能|他(?:到底)?是什么(?:怪物|人)[！?？!]|一拳就|竟然[^。！？]{0,10}[！!]{1}"),
      '疑似「捧哏惊叹」→ 改成失态动作或实际行动'),
 ]
-# 潜台词是不是“直译”：只看整集比例（单句判断不准）。真潜台词通常带意图词。
 INTENT = re.compile(r"其实|故意|试探|逼|借机|掩饰|假装|装作|心里|真正|不敢|不想让|偏要|暗示|提醒|警告|讨好|拖延|拿捏|算计|激他|激她|威胁|示好|撒娇|嘴硬|台阶|赌|怕|想让|想要|要他|要她|别想|潜意|言外|——")
 
 SEG_TAG = re.compile(r'\b(M(?:0[1-9]|1[0-9]|20))\b')
-HEADER_DUR = re.compile(r'\*\*时长\*\*[:：]\s*(\d+)\s*秒')
+HEADER_DUR = re.compile(r'\*\*(?:单集|本集)?时长\*\*[:：]\s*(\d+)\s*(秒|分钟|分|s|min)')
+HEADER_ASPECT = re.compile(r'\*\*画幅\*\*[:：]\s*(16:9|2\.39:1|9:16)')
 HEADER_SEGS = re.compile(r'(\d+)\s*段\s*[×xX*]\s*15\s*秒')
 SPEAKER = re.compile(r'^\*\*([^*【]+?)\*\*\s*$')
 EN_NAME = re.compile(r"^[A-Za-z][A-Za-z0-9 .'\-]*(\s*\((V\.O\.|O\.S\.|O\.C\.)\))?$")
@@ -55,21 +53,24 @@ EN_WORD = re.compile(r"[A-Za-z]+(?:['’][A-Za-z]+)?")
 CJK = re.compile(r'[一-鿿]')
 
 
-def parse_episode_budget(head_text, default_sec, default_words, default_max_scenes):
-    """根据剧本头部声明的弹性时长动态计算单集总词数上限与场次上限。"""
+def parse_episode_budget(head_text, default_sec, default_words, default_max_scenes, cli_aspect='auto'):
+    """根据剧本头部声明的弹性时长与画幅（9:16 / 16:9 / 2.39:1）动态计算对白预算与场次上限，不设死限。"""
     sec = default_sec
     m_sec = HEADER_DUR.search(head_text)
     m_seg = HEADER_SEGS.search(head_text)
     if m_sec:
-        sec = int(m_sec.group(1))
+        val, unit = int(m_sec.group(1)), m_sec.group(2)
+        sec = val * 60 if unit in ('分钟', '分', 'min') else val
     elif m_seg:
         sec = int(m_seg.group(1)) * 15
-    if sec != default_sec and default_sec == 120:
-        scale = sec / 120.0
-        words = int(round(default_words * scale))
-        max_scenes = max(default_max_scenes, (sec + 24) // 25)
-        return sec, words, max_scenes
-    return sec, default_words, default_max_scenes
+    m_asp = HEADER_ASPECT.search(head_text)
+    aspect = m_asp.group(1) if (cli_aspect == 'auto' and m_asp) else (cli_aspect if cli_aspect != 'auto' else '9:16')
+    scale = max(0.5, sec / 120.0)
+    words = int(round(default_words * scale))
+    max_scenes = max(default_max_scenes, (sec + 24) // 25)
+    if aspect in ('16:9', '2.39:1'):
+        max_scenes = max(max_scenes, (sec + 19) // 20)
+    return sec, words, max_scenes, aspect
 
 
 def lint(path, a):
@@ -88,9 +89,10 @@ def lint(path, a):
     content = [ln for ln in body if ln.strip() and ln.strip() != '---']
 
     if not content or not re.match(r'^#\s*(Episode|第)\s*\d+', content[0].strip()):
-        errs.append('第一行应是 `# Episode NNN: 标题`')
+        errs.append('第一行应是 `# Episode NNN: 标题` 或 `# 第 NNN 集：标题`')
     head = '\n'.join(content[:12])
-    ep_sec, ep_word_limit, ep_max_scenes = parse_episode_budget(head, a.seconds, a.words, a.max_scenes)
+    ep_sec, ep_word_limit, ep_max_scenes, ep_aspect = parse_episode_budget(head, a.seconds, a.words, a.max_scenes, a.aspect)
+    is_widescreen = ep_aspect in ('16:9', '2.39:1')
 
     if '集尾钩子' not in head:
         warns.append('开头信息区缺「集尾钩子」说明')
@@ -106,7 +108,7 @@ def lint(path, a):
     if not scenes:
         errs.append('没有场次标题 `### 场 01. …`')
     elif len(scenes) > ep_max_scenes:
-        warns.append(f'{len(scenes)} 场，当前时长（{ep_sec}s）建议 ≤{ep_max_scenes} 场')
+        warns.append(f'{len(scenes)} 场，当前时长（{ep_sec}s · {ep_aspect}）建议 ≤{ep_max_scenes} 场')
 
     dlg_words = vo_words = n_action = 0
     speaker = None
@@ -118,6 +120,7 @@ def lint(path, a):
     n_sub = n_literal = 0
     seg_scenes = {}
     m01_actions = []
+    act_char_limit = 88 if is_widescreen else 72
 
     for i, raw in enumerate(content):
         s = raw.strip()
@@ -199,25 +202,22 @@ def lint(path, a):
             chain = sum(act.count(w) for w in CHAINS)
             if chain >= 2:
                 warns.append(f'一行里动作太多（{chain} 个连接词）→ 拆成多行，一行一个动作：{act[:30]}')
-            elif len(CJK.findall(act)) > 72:
+            elif len(CJK.findall(act)) > act_char_limit:
                 warns.append(f'动作行过长（{len(CJK.findall(act))} 字）→ 拆行：{act[:30]}')
         elif s.startswith('#') or s.startswith('**出场') or s.startswith('**核心') or s.startswith('**造型'):
             speaker = None
 
-    # 题材门禁 G1（只在选了题材时查 EP001 开场）
     WIDE = ('大远景', '远景', '俯瞰', '俯视', '航拍', '俯降', 'Crane Down')
     if ep_no == 1 and m01_actions and a.genre:
         joined = ' '.join(m01_actions[:2])
         if a.genre == 'action' and not any(k in ' '.join(m01_actions) for k in WIDE + ('全景',)):
             warns.append('[G1 action] EP001 开头缺定场镜头（大远景 / 俯降），观众没有空间和尺度的锚点')
-        if a.genre == 'romance' and any(k in joined for k in WIDE):
-            warns.append('[G1 romance] EP001 开头用了大远景 / 航拍定场：言情开场直接进尴尬或心动事件更快（genre-gates.md G1）')
+        if a.genre == 'romance' and not is_widescreen and any(k in joined for k in WIDE):
+            warns.append('[G1 romance·9:16] 竖屏言情 EP001 开头用了大远景定场：竖屏言情直接进尴尬或心动事件更快（横屏电影模式除外）')
 
-    # 潜台词直译比例（A4）
     if n_sub >= 8 and n_literal / n_sub > 0.7:
-        warns.append(f'[A4] 中文潜台词 {n_literal}/{n_sub} 句像台词直译（没有试探、掩饰、怕、故意之类的意图）→ 至少把关键几句写成没说出口的话')
+        warns.append(f'[A4] 中文潜台词 {n_literal}/{n_sub} 句像台词直译 → 至少把关键几句写成没说出口的话')
 
-    # 分镜层（剧本里若仍标了 Mxx 才提示；规则本身在 h3-drama-kit 执行）
     for seg, sc_set in sorted(seg_scenes.items()):
         if len(sc_set) > 1:
             warns.append(f'[分镜层] {seg} 横跨场次 {sorted(sc_set)}：剧本可以不切段，交给分镜按一段一空间切')
@@ -225,7 +225,6 @@ def lint(path, a):
         if cnt > a.seg_words:
             warns.append(f'[分镜层] {seg} 对白 {cnt} 词 > {a.seg_words}：剧本可以不切段，交给分镜拆')
 
-    # 集尾
     end_idx = next((i for i in range(len(content) - 1, -1, -1) if END_LINE.match(content[i].strip())), None)
     if end_idx is None:
         errs.append('最后缺 `**【Episode NNN 完 · 集尾钩子：type】**`')
@@ -238,30 +237,30 @@ def lint(path, a):
         if not any(t.strip().startswith('△') for t in tail) and last_dialogue_idx < end_idx - 4:
             warns.append('集尾最后几行没有画面（△），钩子要落在可拍的画面或台词上')
 
-    # —— v2 规范（观众先看懂）：叠字总量；若剧本用了 v2 信息区（有「本集一句话」），要求拍表和“上集观众记得什么” ——
     text = '\n'.join(content)
     n_overlay = len(re.findall(r'后期叠字', text))
     if n_overlay > 4:
-        warns.append(f'后期叠字 {n_overlay} 处（建议 ≤2 处、每处 ≤6 个英文词；看懂测试里叠字揭秘最容易看不懂）')
+        warns.append(f'后期叠字 {n_overlay} 处（建议 ≤2 处）')
     if '本集一句话' in '\n'.join(content[:20]):
         if '上集观众记得什么' not in '\n'.join(content[:20]):
-            warns.append('v2 信息区缺「上集观众记得什么」（只写观众真在画面里见过的）')
+            warns.append('v2 信息区缺「上集观众记得什么」')
         n_tab = len(re.findall(r'^\|\s*拍\s*\|', text, re.M))
         if n_tab < len(scenes):
-            warns.append(f'v2：每场要有一张拍表（观众要懂 / 画面证据 / 台词 / 反应 / 必保），现在 {n_tab} 张、{len(scenes)} 场')
+            warns.append(f'v2：每场要有一张拍表，现在 {n_tab} 张、{len(scenes)} 场')
         if '| ✔ |' not in text and '✔ |' not in text:
-            warns.append('v2：拍表里没有任何「必保 ✔」的拍；分镜靠它才知道哪几镜不能删')
+            warns.append('v2：拍表里没有任何「必保 ✔」的拍')
 
     total = dlg_words + vo_words
     if total > ep_word_limit:
         errs.append(f'对白 {dlg_words} + V.O. {vo_words} = {total} 词，超过本集时长（{ep_sec}s）预算上限 {ep_word_limit}')
     if total >= 60 and vo_words > dlg_words * 0.25:
         warns.append(f'V.O. {vo_words} 词，超过对白的 25%，能外化的尽量外化')
-    est = total / 2.5 + n_action * 1.8
-    if est > ep_sec * 1.22:
-        warns.append(f'估算时长 {est:.0f} 秒（对白 {total / 2.5:.0f}s + 动作 {n_action}×1.8s），明显超过声明时长 {ep_sec} 秒')
+    shot_sec = 2.4 if is_widescreen else 1.8
+    est = total / 2.5 + n_action * shot_sec
+    if est > ep_sec * 1.30:
+        warns.append(f'估算时长 {est:.0f} 秒（对白 {total / 2.5:.0f}s + 视听动作 {n_action}×{shot_sec}s），超过声明时长 {ep_sec} 秒较多（可按实际戏核调高头部声明时长）')
     n_segs = len(seg_words)
-    seg_info = f' · 切片 {n_segs}段({ep_sec}s)' if n_segs else f' · 目标 {ep_sec}s'
+    seg_info = f' · 切片 {n_segs}段({ep_sec}s)' if n_segs else f' · {ep_aspect} 目标 {ep_sec}s'
     stats = f'场 {len(scenes)}{seg_info} · 对白 {dlg_words} · V.O. {vo_words} · 动作行 {n_action} · 估 {est:.0f}s'
     return errs, warns, stats
 
@@ -270,11 +269,12 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('paths', nargs='+')
     ap.add_argument('--mode', choices=['overseas', 'cn'], default='overseas')
-    ap.add_argument('--words', type=int, default=220, help='120s 基准对白+V.O.上限（若剧本头部声明更长秒数则按比例自动放宽）')
+    ap.add_argument('--aspect', choices=['auto', '9:16', '16:9', '2.39:1'], default='auto', help='画幅规格（auto 自动读取剧本头部的 **画幅**）')
+    ap.add_argument('--words', type=int, default=220, help='120s 基准对白+V.O.上限（按剧本声明时长自动线性伸缩，不设死限）')
     ap.add_argument('--genre', choices=['action', 'revenge', 'romance', 'suspense', 'family'], help='题材（选用 genre-gates.md 对应的题材门禁）')
     ap.add_argument('--seg-words', type=int, default=28, help='（分镜层，仅剧本标了 Mxx 时用）单段 15 秒对白上限')
-    ap.add_argument('--seconds', type=int, default=120, help='默认基准时长（会被剧本头部的 **时长**：XXX 秒 自动覆盖）')
-    ap.add_argument('--max-scenes', type=int, default=4, help='120s 基准最大场数（长集自动按比例放宽）')
+    ap.add_argument('--seconds', type=int, default=120, help='默认基准时长（会被剧本头部的 **时长**：XXX 秒/分钟 自动覆盖）')
+    ap.add_argument('--max-scenes', type=int, default=4, help='120s 基准最大场数（长集与横屏电影模式自动按比例放宽）')
     a = ap.parse_args()
 
     files = []
