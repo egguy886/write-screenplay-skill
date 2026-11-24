@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-L5 单集剧本质检器 v5.0（前制编导 & 空间站位锁 & 静音可读版）：
-通用门禁（A1–A10）：
+L5 单集剧本质检器 v5.1（前制编导 & 空间站位锁 & 电影感官外化 & 单镜单形态版）：
+通用门禁（A1–A12）：
   - 角色名规范、去 AI 腔（说明书独白 / 复述 / 捧哏，中英文通用）、潜台词直译比例、回钩与集尾强钩子格式；
-  - [v5.0 新增 A9] 物理子空间独立分场检查（❌ 拦截“女囚室与隔壁木牢”式复合子空间场标）+ 每场 `**开场站位**` 锚点核验；
-  - [v5.0 新增 A10] “静音可读”因果检查（无外部触发源突兀躺回/装昏提示、未交代物理出处凭空掏关键道具提示）；
-  - [v5.0 校准] 确定性双轨时长测算（中文 3.8 字/秒、英文 2.5 词/秒 + 横屏 3.2s/动作节拍、竖屏 2.5s/动作节拍）。
+  - [v5.0 A9] 物理子空间独立分场检查（❌ 拦截复合子空间场标）+ 每场 `**开场站位**` 锚点核验；
+  - [v5.0 A10] “静音可读”因果检查（无外部触发源突兀躺回/装昏提示、未交代物理出处凭空掏关键道具提示）；
+  - [v5.1 新增 A11] 隐形感官外化检查（拦截无物理媒介的“原地闭目闻香/闭眼感应”谜语动作，提示改用手指刮水渍/捻香灰等可见媒介）；
+  - [v5.1 新增 A12] 单镜单物理形态检查（拦截单行 △ 同时写“悬空闭网/麻袋包裹”与“散开露人形”的跨态硬渐变，提示借水花/遮挡拆两拍）；
+  - 确定性双轨时长测算（中文 3.8 字/秒、英文 2.5 词/秒 + 横屏 3.2s/动作节拍、竖屏 2.5s/动作节拍）。
 
 用法：
   python scripts/script_lint.py <剧本文件或目录>... [--mode overseas|cn] [--aspect auto|9:16|16:9|2.39:1] [--genre action|revenge|romance|suspense|family] [--strict-staging]
@@ -29,8 +31,16 @@ SPATIAL_ANCHOR = re.compile(r'(?:画左|画右|居中|前景|远景|背景|内�
 # v5.0 A10: 静音可读（姿态突变触发源 & 道具物理出处）
 POSTURE_SLEEP = re.compile(r'(?:躺回|歪回|倒回|装昏|装睡|假寐|合眼歪回)')
 EXTERNAL_TRIGGER = re.compile(r'(?:火光|灯火|灯影|火把|油灯|脚步|门响|锁响|开门|说话声|喝骂|咳嗽|逼近|晃来|传来)')
-PROP_DRAW = re.compile(r'(?:掏出|摸出|拔出|抽出|亮出|摸走|顺走)[^，。；\n]{0,12}(?:匕首|短刀|长剑|钥匙|铜钥|碎碗|瓷片|毒针|暗器|手枪|令牌|密信|骨笛|竹哨)')
-PROP_SOURCE = re.compile(r'(?:怀里|怀中|腰间|袖中|袖里|靴筒|包袱|衣襟|口袋|兜里|抽屉|桌底|枕下|草堆下|尸身|身上|皮坎肩)')
+PROP_DRAW = re.compile(r'(?:掏出|摸出|拔出|抽出|亮出|摸走|顺走)[^，。；\n]{0,12}(?:匕首|短刀|长剑|钥匙|铜钥|碎碗|瓷片|毒针|暗器|手枪|令牌|密信|骨笛|竹哨|短斧)')
+PROP_SOURCE = re.compile(r'(?:怀里|怀中|腰间|腰带|袖中|袖里|靴筒|包袱|衣襟|口袋|兜里|抽屉|桌底|枕下|草堆下|尸身|身上|皮坎肩)')
+
+# v5.1 A11: 隐形感官闭眼谜语人检测（闭目/闭眼闻香、听风却无手上物理媒介）
+EYES_CLOSED_SENSE = re.compile(r'(?:闭目|闭眼|合眼|阖目|闭着眼)[^。；\n]{0,20}(?:嗅|闻|辨|听|感应|感受)|(?:嗅|闻|辨)[^。；\n]{0,14}(?:闭目|闭眼|合眼|阖目)')
+PHYSICAL_SCENT_CARRIER = re.compile(r'(?:指尖|二指|手指|指腹|刮|沾|捻|抹|凑近|鼻端|鼻尖|水渍|黑水|油水|香灰|香丸|碎屑|帕子|衣角)')
+
+# v5.1 A12: 单镜跨拓扑形态硬渐变检测（同一行 △ 既悬空兜网/麻袋包裹又散开露出人形）
+NET_SUSPENDED = re.compile(r'(?:悬空|半空|吊起|吊越|悬在)[^。；\n]{0,18}(?:大网|麻网|渔网|麻袋|裹尸)')
+NET_OPEN_BODY = re.compile(r'(?:散开|摊开|打开|崩开)[^。；\n]{0,16}(?:露出|显出|躺着)[^。；\n]{0,16}(?:人|男子|女子|阿奴|囚徒|尸)')
 
 AI_EN = [
     (re.compile(r"\bmy (?:body|hands?|legs?|arms?|heart|blood|power|eyes?)\b[^.?!]{0,25}\b(?:won't|can't|isn't|is|are|keeps?)\b[^.?!]{0,15}\b(?:move|stop|listen|obey|respond|burn\w*|glow\w*|shak\w*|changing)\b"
@@ -51,6 +61,8 @@ AI_CN = [
     (re.compile(r"怎么可能[！?？!]|这不可能|他(?:到底)?是什么(?:怪物|人)[！?？!]|一拳就|竟然[^。！？]{0,10}[！!]{1}"),
      '疑似「捧哏惊叹」→ 改成失态动作或实际行动'),
 ]
+PERIOD_CUE_CN = re.compile(r"(?:大明|大晏|朝廷|锦衣卫|市舶司|银两|银子|铜钱|少爷|老爷|夫人|小姐|当家|掌柜|客栈|镖局|王爷|陛下|殿下|大人|衙役|仙门|宗门|福船|海寇|死囚)")
+MODERN_SLANG_CN = re.compile(r"(?:稳了|搞定了?|拿捏了|躺赢|破防|给力|拉满|掉线|开挂|打脸|格局打开|主打一个|妥妥的|没毛病|绝绝子|杠杠的|心态崩了|到位了|靠谱)")
 INTENT = re.compile(r"其实|故意|试探|逼|借机|掩饰|假装|装作|心里|真正|不敢|不想让|偏要|暗示|提醒|警告|讨好|拖延|拿捏|算计|激他|激她|威胁|示好|撒娇|嘴硬|台阶|赌|怕|想让|想要|要他|要她|别想|潜意|言外|——")
 
 SEG_TAG = re.compile(r'\b(M(?:0[1-9]|1[0-9]|20))\b')
@@ -110,6 +122,7 @@ def lint(path, a):
         head, a.seconds, a.words, a.max_scenes, a.aspect, a.mode
     )
     is_widescreen = ep_aspect in ('16:9', '2.39:1')
+    is_period_cn = (a.mode == 'cn') and bool(PERIOD_CUE_CN.search('\n'.join(content)))
 
     if '集尾钩子' not in head:
         warns.append('开头信息区缺「集尾钩子」说明')
@@ -202,6 +215,10 @@ def lint(path, a):
             for rx, hint in (AI_CN if a.mode == 'cn' else AI_EN):
                 if rx.search(text):
                     warns.append(f'{speaker}: "{text[:42]}" → {hint}')
+            if is_period_cn:
+                m_slang = MODERN_SLANG_CN.search(text)
+                if m_slang:
+                    warns.append(f'[A13 古装现代词出戏] {speaker}: "{text[:42]}" 含现代口语「{m_slang.group(0)}」→ 请改为符合朝代语境的古风口语（如“有着落了/妥当了/成了”）')
             sub_line = next((c.strip() for c in content[i + 1:i + 3] if '中文潜台词' in c), '')
             if sub_line:
                 sub = re.sub(r'^（?中文潜台词[:：]\s*|）$', '', sub_line)
@@ -257,6 +274,16 @@ def lint(path, a):
             if PROP_DRAW.search(act) and not PROP_SOURCE.search(act) and not PROP_SOURCE.search(prev_act_text):
                 warns.append(
                     f'[A10 道具守恒] 场 {cur_scene_no:02d} 动作行写「{PROP_DRAW.search(act).group(0)}」，未指明从何处取出（如腰间/怀里/袖中/桌底）→ 下游易拍成凭空变出道具：{act[:32]}'
+                )
+            # v5.1 A11: 隐形感官外化 — 禁无物理媒介原地闭目闻香/听风
+            if EYES_CLOSED_SENSE.search(act) and not PHYSICAL_SCENT_CARRIER.search(act) and not PHYSICAL_SCENT_CARRIER.search(prev_act_text):
+                warns.append(
+                    f'[A11 感官外化] 场 {cur_scene_no:02d} 动作行用闭眼表现闻香/听风但缺可见物理媒介 → 观众易误以为角色犯困发呆，请改为睁眼警觉+手指刮缆绳水渍/捻香灰凑鼻等可见动作：{act[:34]}'
+                )
+            # v5.1 A12: 单镜单物理形态 — 禁同一行 △ 让悬空闭兜网直接散开露人形
+            if NET_SUSPENDED.search(act) and NET_OPEN_BODY.search(act):
+                warns.append(
+                    f'[A12 单镜单形态] 场 {cur_scene_no:02d} 同一行 △ 既悬吊网兜/包裹又直接散开露人形 → AI 极易在半空长出双腿变形，请拆成「闭合网兜砸积水水花遮挡切」+「下一拍甲板摊开态铁钩挑网揭示」两行：{act[:34]}'
                 )
             prev_act_text = act
 
